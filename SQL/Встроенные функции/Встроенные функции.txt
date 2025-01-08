@@ -1,0 +1,213 @@
+ФУНКЦИИ ДАТЫ И ВРЕМЕНИ:
+
+INTERVAL 1 YEAR
+
+INTERVAL '10-2' YEAR_MONTH
+
+SELECT '2023-01-01' + INTERVAL '10-2' YEAR_MONTH;
+
+SELECT '2023-01-01 14:00:00' - INTERVAL '01:30' HOUR_MINUTE;
+
+SELECT '2023-01-01 14:00:00' + INTERVAL '4 2' DAY_HOUR;
+
+SELECT NOW();
+
+SELECT CURTIME(),
+       CURDATE();
+
+SELECT UTC_TIMESTAMP();
+
+SELECT UTC_DATE(), UTC_TIME()
+
+SELECT MAKEDATE(2023, 1),
+       MAKEDATE(2023, 255),
+       MAKEDATE(2023, 365);
+
+SELECT MAKETIME(12, 33, 1),
+       MAKETIME(0, 1, 2),
+       MAKETIME(21, 11, 42);
+
+
+
+SELECT CONCAT(name,' ', surname) AS staffer, MAKEDATE(hire_year, hire_day) AS hire_date
+FROM Staff
+ORDER BY hire_date DESC
+
+
+
+SELECT CONCAT(name, ' ', surname) AS staffer, hire_date + INTERVAL '1 6' YEAR_MONTH as hire_date
+FROM Staff
+ORDER BY hire_date DESC
+
+
+SELECT TIME_TO_SEC('00:00:25'),
+       TIME_TO_SEC('00:01:30'),
+       TIME_TO_SEC('01:00:00');
+
+
+SELECT TO_DAYS('2023-04-01'),
+
+SELECT TO_SECONDS('2023-04-01')
+
+SELECT CONCAT(name, ' ', surname) AS staffer, LAST_DAY(hire_date) as first_salary
+FROM Staff
+ORDER BY salary DESC
+
+SELECT CONCAT(name, ' ', surname) AS staffer
+FROM Staff
+WHERE TO_DAYS(LAST_DAY(hire_date)) - TO_DAYS(hire_date) < 14
+ORDER BY staffer
+
+SELECT CONCAT(name, ' ', surname) AS staffer
+FROM Staff
+WHERE TO_DAYS('2023-07-15') - TO_DAYS(hire_date) > 9000
+ORDER BY hire_date
+
+SELECT DATE('2024-09-12 14:33');
+SELECT DATE('2023-10-20 12:30:00'),
+       DATE('2023-12-31 10:00:20');
+
+SELECT TIME('2024-09-12 14:33')
+
+SELECT TIME('2023-10-20 12:30:00'),
+       TIME('2023-12-31 10:00:20'),
+       TIME('12:30:00');
+
+SELECT HOUR('1999-01-10 13:13:12')
+
+SELECT HOUR('12:30:10'),
+       HOUR('18:20:00');
+
+SELECT MINUTE('12:30:10.1415'),
+       SECOND('12:30:10.1415'),
+       MICROSECOND('12:30:10.1415');
+
+SELECT YEAR('2023-10-20'),
+       YEAR('2027-12-31');
+
+SELECT MONTH('2023-10-20'),
+       DAY('2023-10-20');
+
+SELECT DAYOFYEAR('1999-01-10 13:13:12')
+SELECT DAYOFYEAR('2023-01-01'),
+       DAYOFYEAR('2023-02-01'),
+       DAYOFYEAR('2023-12-31');
+
+SELECT WEEK('2023-01-01'),
+       WEEK('2023-01-08'),
+       WEEK('2023-12-31');
+
+SELECT WEEKDAY('2023-10-16'),      -- понедельник
+       WEEKDAY('2023-10-17'),      -- вторник
+       WEEKDAY('2023-10-18'),      -- среда
+       WEEKDAY('2023-10-23');      -- понедельник
+
+
+SELECT QUARTER('2023-01-01'),      -- январь
+       QUARTER('2023-04-01'),      -- апрель
+       QUARTER('2023-07-01'),      -- июль
+       QUARTER('2023-10-01');      -- октябрь
+
+
+SELECT DAYNAME('2023-10-16'),      -- понедельник
+       DAYNAME('2023-10-17'),      -- вторник
+       DAYNAME('2023-10-18'); 
+
+SELECT MONTHNAME('2023-01-01'),
+
+
+
+
+SET lc_time_names = 'ru_RU';
+
+SELECT DAYNAME('2023-10-20'),
+       MONTHNAME('2023-10-20');
+
+
+SELECT id, SUBSTRING_INDEX(actor, ' ', 1) as name, SUBSTRING_INDEX(actor, ' ', -1) as surname, date(birth_date) as birth_date, time(birth_date) as birth_time
+FROM Actors
+
+
+select name, surname, birth_time
+from Actors
+where hour(birth_time) in (8, 10, 18)
+order by birth_time
+
+select name, surname, birth_date
+from Actors
+where dayofyear(birth_date) < 256
+order by birth_date
+
+
+select name, surname, birth_date
+from Actors
+where weekday(birth_date) = 2
+order by birth_date
+
+
+select name, surname, birth_date
+from Actors
+where (year(birth_date) > 1975) and (quarter(birth_date) in (2, 4))
+order by birth_time desc
+
+select name, surname, concat(day(birth_date), ' ', monthname(birth_date), ' ', year(birth_date)) as birth_date
+from Actors
+where month(birth_date) >= 5 and month(birth_date) <= 7
+
+
+
+
+
+
+
+
+SELECT ADDDATE('2023-10-20 07:30:00', INTERVAL 4 DAY),
+       ADDDATE('2023-10-20 07:30:00', INTERVAL 4 HOUR);
+
+
+select subdate('2023-12-12', interval 4 hour)
+
+
+SELECT SUBDATE('2023-10-20 07:30:00', INTERVAL 4 DAY),
+
+select addtime('2020-12-11 01:01:00', '12:00:01')
+
+select subtime('2020-12-11 01:01:00', '12:00:01')
+
+SELECT DATEDIFF('2023-10-20 07:30:00', '2023-10-20 8:00:00'),
+
+select datediff('1299-01-12', '1233-03-15')
+
+SELECT TIMEDIFF('2023-10-20 9:00:00', '2023-10-20 07:00:00'),
+       TIMEDIFF('2023-10-25 9:00:00', '2023-10-20 07:00:00');
+
+select timediff(NOW(), '2024-12-09 11:25:00')
+
+
+select timestampdiff(hour, '2020-01-04', Now())
+
+
+select timestamp('2020-04-21', '12:19')
+
+select customer_name, addtime(order_time, spent_on_delivery) as delivery_datetime
+from Orders
+where date(order_time) = '2023-10-24'
+order by time(addtime(order_time, spent_on_delivery)) desc
+limit 1
+
+
+select task, executor, datediff(task_end, task_start) + 1 as days_spent
+from Tasks 
+order by 3 desc
+limit 1
+
+
+select name, surname, timestampdiff(year, birth_date, UTC_DATE()) as age
+from Actors
+order by age desc
+
+
+select name, timediff(rent_end, rent_start) as rent_time, concat(hour(timediff(rent_end, rent_start)) * 10, '€') as rent_amount
+from Rental
+where car_brand = 'bmw'
+order by rent_time, name
