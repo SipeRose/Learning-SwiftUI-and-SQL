@@ -211,3 +211,129 @@ select name, timediff(rent_end, rent_start) as rent_time, concat(hour(timediff(r
 from Rental
 where car_brand = 'bmw'
 order by rent_time, name
+
+
+
+SELECT DATE_FORMAT('2023-10-20 07:30:00', '%H:%i, %d.%m.%Y');
+
+SELECT TIME_FORMAT('12:30:00', '%H::%i::%s'),
+       TIME_FORMAT('12:30:00', 'Time: %H:%i');
+
+
+SELECT STR_TO_DATE('07:30, 20.10.2023', '%H:%i, %d.%m.%Y');
+
+SELECT GET_FORMAT(DATE, 'EUR'),
+       GET_FORMAT(TIME, 'EUR'),
+       GET_FORMAT(DATETIME, 'EUR');
+
+
+select name, surname, date_format(birth_date, '%d.%m.%Y') as birth_date, time_format(birth_time, '%H:%i') as birth_time
+from Actors
+where day(birth_date) < 15
+
+
+select name, surname, concat(date_format(birth_date, '%d %M %Y'), ', ', time_format(birth_time, '%H:%i')) as birth_datetime
+from Actors
+where (year(birth_date) >= 1969) and (year(birth_date) <= 1975)
+
+
+select name, surname, date_format(str_to_date(birth_date, '%d %b %Y'), get_format(date, 'ISO')) as birth_date,
+time_format(str_to_date(birth_time, 'Hours: %H, Minutes: %i'), get_format(time, 'iso')) as birth_time
+from Actors
+where month(str_to_date(birth_date, '%d %b %Y')) = 9
+
+
+
+
+SELECT ISNULL(0),
+
+SELECT IF(1 > 0, 'bee', 'geek'),
+       IF(1 < 0, 'bee', 'geek');
+
+SELECT COALESCE(1, 2, 3),
+       COALESCE(NULL, 2, 3),
+
+SELECT IFNULL(NULL, 'geek'),
+       IFNULL('bee', 'geek');
+
+SELECT NULLIF('bee', 'bee'),
+       NULLIF('bee', 'geek');
+
+SELECT CONVERT(100.78, DECIMAL(4, 1)),
+       CONVERT(100.78, DECIMAL(3, 0));
+
+SELECT CAST(100.78 AS DECIMAL(4, 1)),
+       CAST(100.78 AS DECIMAL(3, 0));
+
+
+select name, surname, if(country = 'England', 'England', 'Other country') as country
+from Directors
+order by name
+
+select name, surname, ifnull(rating, 0) as rating
+from Directors
+order by rating, name
+
+select coalesce(name, surname, 'Unknown') as director, rating
+from Directors
+order by rating desc
+
+select name, surname, country, if(country = 'usa', if(rating + 10 > 100, 100, rating + 10), rating) as rating
+from Directors
+order by rating desc, name
+
+SELECT title, author,
+       CASE quantity
+           WHEN 0 THEN 'Out of stock'
+           WHEN 1 THEN 'One in stock'
+           WHEN 2 THEN 'Little in stock'
+           WHEN 3 THEN 'Little in stock'
+           WHEN 4 THEN 'Little in stock'
+           WHEN 5 THEN 'Little in stock'
+           ELSE 'A lot in stock'
+       END AS availability
+FROM Books;
+
+SELECT title, author,
+       CASE
+           WHEN quantity = 0 THEN 'Out of stock'
+           WHEN quantity = 1 THEN 'One in stock'
+           WHEN quantity BETWEEN 2 AND 5 THEN 'Little in stock'
+           ELSE 'A lot in stock'
+       END AS availability
+FROM Books;
+
+
+SELECT title, author
+FROM Books
+ORDER BY CASE
+             WHEN title LIKE 'The %' THEN 1
+             ELSE 2
+         END;
+
+
+select name, surname, 
+	case grade
+		when 'A' then 5
+        when 'B' then 4
+        when 'C' then 3
+        when 'D' then 2
+        when 'E' then 1
+	end as grade
+from Math
+order by grade desc, name
+
+
+select name, surname,
+	case 
+		when 
+			(substring_index(email, '@', -1) = 'midtown.com') 
+            and
+            char_length(substring_index(email, '@', 1)) > 1
+            and
+            not left(email, 1) in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
+		then 'Correct'
+        else 'Incorrect'
+	end as email_status
+from Students
+order by name
