@@ -1,0 +1,281 @@
+SELECT *
+FROM Books
+WHERE price > (SELECT AVG(price)
+               FROM Books);
+
+SELECT author, AVG(price) AS avg_price
+FROM Books
+GROUP BY author
+HAVING AVG(price) > (SELECT AVG(price)
+                     FROM Books);
+
+SELECT title, author, price
+FROM Books
+WHERE price > ALL (SELECT price
+                   FROM Books
+                   WHERE author = 'Chuck Palahniuk');
+
+SELECT *
+FROM (SELECT title, author, price
+      FROM Books) AS BooksCopy;
+
+select title
+from Films
+where running_time > (select min(running_time) from Films)
+order by title
+
+select director
+from Films
+group by director
+having avg(running_time) > (select avg(running_time) from Films)
+order by director
+
+select distinct director
+from Films
+where running_time = (select min(running_time) from Films)
+order by director
+
+select distinct director
+from Films
+where running_time > (select min(running_time) from Films)
+order by director
+
+
+select title
+from Films
+where running_time = (select running_time from Films where title = 'WAll-e') and title != 'WAll-e'
+order by title
+
+select director, count(*) as num_of_films
+from Films
+where running_time > (select avg(running_time) from Films)
+group by director 
+order by num_of_films desc, director
+
+select title
+from Films
+where running_time > (select min(running_time) from Films where director = 'Brad Bird')
+order by title
+
+select title
+from Films
+where running_time < (select min(running_time) from Films where director = 'John Lasseter')
+order by title
+
+select 
+(select count(*)
+from (select running_time
+from Films
+where running_time = (select min(running_time) from Films)) as first_table) as shortest_films,
+(select count(*)
+from (select running_time
+from Films
+where running_time = (select max(running_time) from Films)) as second_table) as longest_films
+
+
+SELECT title, user_score
+FROM Books
+WHERE user_score > (SELECT user_score
+                    FROM Books AS InnerBooks
+                    WHERE id = Books.id - 1);
+
+
+SELECT title, critic_score, user_score
+FROM Books
+WHERE (critic_score, user_score) = (SELECT MIN(critic_score), MIN(user_score)
+                                    FROM Books)
+
+
+
+SELECT title, critic_score
+FROM Books
+WHERE critic_score IN (SELECT critic_score
+                       FROM Books AS InnerBooks
+                       WHERE id = (Books.id - 1) OR id = Books.id - 2);
+
+
+
+select title
+from Films
+where running_time > (select running_time
+						from Films as innerFilms
+                        where show_date = subdate(Films.show_date, interval 1 day))
+order by title
+
+select name, surname, grade
+from Math
+where grade > (select avg(grade)
+				from Math as InnerMath
+                where id < Math.id)
+order by grade, name
+
+
+select name, surname, grade
+from Math
+where grade in (select grade
+					from Math as InnerMath
+                    where id = Math.id - 1 or id = Math.id + 1)
+order by name
+
+
+SELECT COUNT(*) AS num_of_users
+FROM BooksRental
+WHERE book_id = (SELECT id
+                 FROM Books
+                 WHERE title = 'It');
+
+
+SELECT name, surname
+FROM Users
+WHERE id IN (SELECT user_id                           -- второй подзапрос
+             FROM BooksRental
+             WHERE book_id = (SELECT id               -- первый подзапрос
+                              FROM Books
+                              WHERE title = 'It'));
+
+
+
+SELECT name, surname,
+      (SELECT COUNT(*)
+       FROM BooksRental
+       WHERE user_id = Users.id) AS num_of_books
+FROM Users;
+
+
+SELECT author, title
+FROM Books
+WHERE EXISTS (SELECT *
+              FROM BooksRental
+              WHERE book_id = Books.id);
+
+SELECT author, title
+FROM Books
+WHERE NOT EXISTS (SELECT book_id
+                  FROM BooksRental
+                  WHERE book_id = Books.id);
+
+
+select name, surname
+from Users
+where id not in (select user_id
+			from Purchases
+			);
+
+
+select title, director
+from Films
+where id in (select distinct film_id from Purchases)
+order by title
+
+
+select count(film_id) as num_of_users
+from Purchases
+where film_id in (select id from Films where title = 'Toy Story 2')
+
+
+select name, surname
+from Users
+where id in (select user_id
+			from Purchases
+			where film_id = (select id from Films where title = 'Toy Story 2')
+            )
+order by name
+
+
+select name, surname, 
+	(select count(*)
+	 from Purchases
+     where user_id = Users.id) as num_of_films
+from Users
+order by num_of_films desc, name
+
+
+select name, surname
+from Users
+where id = (select user_id 
+			from (select user_id, count(*) as count1
+					from Purchases
+					group by user_id
+					order by count1 desc
+					limit 1) as InnerTable)
+
+
+select name, surname,
+(
+	select title
+	from Films
+	where id in (
+		select substring_index(GC, ',', 1)
+		from (
+				select user_id, group_concat(film_id) as GC
+				from Purchases
+				group by user_id
+				Having user_id = Users.id 
+			) as tre
+	)
+) as first_film
+from Users
+where id in (select distinct user_id from Purchases)
+order by name
+
+
+
+select name, surname, ifnull(total_spending, 0) as total_spending
+from (
+	select name, surname,
+	(
+		select sumPrice
+		from (
+			select user_id, sum(price) as sumPrice
+			from (
+				select user_id, film_id,
+				(
+					select price
+					from Films
+					where id = Purchases.film_id
+				) as price
+				from Purchases
+			) as UserSum
+			group by user_id
+		) as totalPrice
+		where user_id = Users.id
+	) as total_spending
+	from Users
+) as realTotal
+order by total_spending desc, name
+
+
+
+select name, surname, 
+	substring_index(group_concat(title), ',', 1) as most_expensive_film
+from
+(
+	select user_id,
+	(
+		select name
+		from Users
+		where id = user_id
+	) as name,
+	(
+		select surname
+		from Users
+		where id = user_id
+	) as surname,
+	(
+		select title
+		from Films
+		where id = Purchases.film_id
+	) as title,
+	(
+		select price
+		from Films
+		where id = Purchases.film_id
+	) as price
+	from Purchases
+	order by name, surname, price desc, title
+) as TOTAL_TABLE
+group by name, surname
+order by substring_index(group_concat(price), ',', 1) desc, most_expensive_film, name
+
+
+
