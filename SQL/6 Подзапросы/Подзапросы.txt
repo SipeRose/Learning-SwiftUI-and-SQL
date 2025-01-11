@@ -279,3 +279,142 @@ order by substring_index(group_concat(price), ',', 1) desc, most_expensive_film,
 
 
 
+select round(count(requested) / count(sender_id), 2) as accept_rate
+from 
+(
+	select distinct sender_id, send_to_id,
+	(
+		select distinct requester_id
+		from RequestsAccepted
+		where requester_id = FriendRequests.sender_id and accepter_id = FriendRequests.send_to_id
+	) as requested
+	from FriendRequests
+) as totalTable
+
+
+
+
+select distinct followee as user,
+(
+	select count(*)
+    from Follow as innerTable
+    group by followee
+    having followee = Follow.followee
+) as followers
+from Follow
+where followee in (select follower from Follow)
+order by user
+
+
+
+select id
+from Orders
+where quantity > ALL(
+					select sum(quantity) / count(quantity)
+					from Orders as innerTable
+					group by id
+				 );
+
+
+
+select id
+from Candidates
+where (years_of_exp > 1) and 15 < (
+									select sum(score)
+                                    from Rounds
+                                    group by interview_id
+                                    having interview_id = Candidates.interview_id 
+								  )
+
+
+select *
+from Orders
+where if(
+(select sum(order_type) from Orders as innerOrders group by customer_id having customer_id = Orders.customer_id)
+<
+(select count(order_type) from Orders as innerOrders group by customer_id having customer_id = Orders.customer_id),
+order_type = 0, order_type in (0, 1)
+)
+
+
+
+
+select 
+case 
+	when
+	(
+		select sum(count_)
+		from 
+		(
+			select count(score) as count_
+			from Moscow
+			group by score
+			having score >= 90
+		) as MoscowSum
+	) > 
+	(
+	select sum(count_)
+	from 
+	(
+		select count(score) as count_
+		from SaintPetersburg
+		group by score
+		having score >= 90
+	) as SPBSum
+	)
+	then 'Moscow University'
+    when
+    (
+		select sum(count_)
+		from 
+		(
+			select count(score) as count_
+			from Moscow
+			group by score
+			having score >= 90
+		) as MoscowSum
+	) <
+	(
+	select sum(count_)
+	from 
+	(
+		select count(score) as count_
+		from SaintPetersburg
+		group by score
+		having score >= 90
+	) as SPBSum
+	)
+    then 'Saint Petersburg University'
+    else 'No winner'
+    end as winner
+
+
+select team, day,
+(
+	select sum(total)
+    from
+    (
+		select sum(score_points) as total
+		from Scores as Initial
+		where team = Scores.team and day <= Scores.day
+		group by team, day
+    ) as Middle
+) as total
+from Scores
+order by team, day
+
+
+
+select score, 
+(
+	select count(*)
+    from 
+    (
+		select distinct score as score
+		from Scores
+		order by Score desc
+    ) as InnerTable
+    where score >= Scores.score
+) as gamer_rank
+from Scores
+order by gamer_rank desc;
