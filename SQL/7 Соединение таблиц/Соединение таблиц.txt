@@ -1,0 +1,70 @@
+SELECT *
+FROM Books INNER JOIN Authors ON Books.author_id = Authors.id;
+
+
+SELECT Books.id, Authors.id
+FROM Books INNER JOIN Authors ON Books.author_id = Authors.id;
+
+SELECT *
+FROM BooksRental INNER JOIN Books ON BooksRental.book_id = Books.id
+                 INNER JOIN Users ON BooksRental.user_id = Users.id;
+
+SELECT *
+FROM Books JOIN Authors ON Books.author_id = Authors.id;
+
+SELECT *
+FROM Books, Authors WHERE Books.author_id = Authors.id;
+
+select distinct name as product
+from Sales inner join Products on Products.id = product_id
+
+select distinct name as product
+from Products inner join Sales on Products.id = product_id
+where sale_date = ('2023-09-12')
+
+select name, concat(sum(price), '€') as amount
+from Products inner join Sales on Products.id = product_id
+group by name
+
+
+select name as bestseller
+from 
+(
+	select name, count(*)
+	from Products inner join Sales on Products.id = product_id
+    where sale_date = '2023-09-12'
+	group by name
+	order by 2 desc
+) as OuterTable
+limit 1
+
+
+select name as product
+from Products inner join Sales on Products.id = product_id
+where sale_date = '2023-09-12'
+group by name
+having count(*) = 1
+order by product
+
+
+select Sales.id as sale_id, sale_date, Products.name as product, Categories.name as category
+from Sales inner join Products on Products.id = product_id
+			inner join Categories on category_id = Categories.id
+
+
+select category
+from
+(
+	select Categories.name as category, sum(price)
+	from Categories inner join Products on Categories.id = category_id
+					inner join Sales on Products.id = product_id
+	group by Categories.name
+	order by 2 desc
+	limit 1
+) as Outside
+
+
+
+select t1.name as name
+from Employees as t1 inner join Employees as t2 on t1.manager_id = t2.id
+where t1.salary > t2.salary
