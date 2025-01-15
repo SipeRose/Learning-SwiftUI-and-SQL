@@ -122,3 +122,14 @@ from Categories left join (
 	where not isnull(product_id)
 	group by category
 ) as Second on name = category
+
+
+
+SELECT *
+FROM Subjects CROSS JOIN Students;
+
+SELECT *
+FROM Subjects AS S1 CROSS JOIN Subjects AS S2;
+
+SELECT *
+FROM Students CROSS JOIN Subjects;
