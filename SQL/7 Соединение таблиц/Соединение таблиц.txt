@@ -68,3 +68,57 @@ from
 select t1.name as name
 from Employees as t1 inner join Employees as t2 on t1.manager_id = t2.id
 where t1.salary > t2.salary
+
+
+
+
+
+
+SELECT *
+FROM Books LEFT OUTER JOIN Authors ON Books.author_id = Authors.id;
+
+
+SELECT title,
+       IFNULL(author, 'Unknown') AS author
+FROM Books LEFT OUTER JOIN Authors ON Books.author_id = Authors.id;
+
+
+
+SELECT *
+FROM Books RIGHT OUTER JOIN Authors ON Books.author_id = Authors.id;
+
+
+SELECT Books.*, author
+FROM Books
+LEFT JOIN Authors ON author_id = Authors.id
+
+select name as product
+from Products left join Sales on Products.id = product_id
+group by name
+having count(product_id) = 0
+
+select name as product, ifnull(
+(
+	select sale_date
+	from Products as InsideTable
+	left join Sales on Products.id = product_id
+    where name = Products.name
+	order by sale_date
+    limit 1
+), 'Not sold') as first_sale
+from Products
+
+
+
+select name as product, concat(price * count(product_id), '€') as amount
+from Products left join Sales on Products.id = product_id
+group by name, price
+
+select name as category, concat(round(ifnull(avg_price, 0), 0), '€') as avg_amount
+from Categories left join (
+	select Categories.name as category, avg(price) as avg_price
+	from Categories left join Products on Categories.id = category_id
+					left join Sales on Products.id = product_id
+	where not isnull(product_id)
+	group by category
+) as Second on name = category
