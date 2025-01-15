@@ -133,3 +133,43 @@ FROM Subjects AS S1 CROSS JOIN Subjects AS S2;
 
 SELECT *
 FROM Students CROSS JOIN Subjects;
+
+
+
+
+select MaleStaff.staffer as male_staffer, FemaleStaff.staffer as female_staffer
+from MaleStaff cross join FemaleStaff on abs(MaleStaff.age - FemaleStaff.age) < 5
+order by male_staffer, female_staffer
+
+
+select concat(Meals.name, ', ', Drinks.name) as combo, concat(Meals.price + Drinks.price, '€') as price
+from Meals cross join Drinks
+order by Meals.price + Drinks.price, Meals.name, Drinks.name
+
+
+select suit, rankvalue
+from
+(
+	select suit, 
+	case 
+		when suit = 'Spades' then 1
+		when suit = 'Clubs' then 2
+		when suit = 'Diamonds' then 3
+		else 4
+		end as rankingSuit, 
+	rankvalue, 
+	case
+			when rankvalue = 'Jack' then round(11, 0)
+			when rankvalue = 'Queen' then round(12, 0)
+			when rankvalue = 'King' then round(13, 0)
+			when rankvalue = 'Ace' then round(14, 0)
+			else round(rankvalue, 0)
+			end as rankingValue
+	from Ranks cross join Suits
+	order by rankingSuit, rankingValue
+) as OuterTable
+
+
+select concat('(', S1.x, '; ', S1.y, ')') as p1, concat('(', S2.x, '; ', S2.y, ')') as p2,
+round(sqrt((pow(S1.x - S2.x, 2) + pow(S1.y - S2.y, 2))), 1) as distance
+from Points as S1 cross join Points as S2 on sqrt((pow(S1.x - S2.x, 2) + pow(S1.y - S2.y, 2))) > 5 and S1.id < S2.id
