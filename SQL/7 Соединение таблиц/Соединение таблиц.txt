@@ -1,3 +1,4 @@
+
 SELECT *
 FROM Books INNER JOIN Authors ON Books.author_id = Authors.id;
 
@@ -372,3 +373,95 @@ from Programmers)
 
 order by third, name desc, surname desc
 ) as totalTable
+
+
+
+
+
+select T1.name as home_team, T2.name as away_team
+from Teams as T1 cross join Teams as T2 on T1.name != T2.name
+
+
+select T1.symbol as metal, T2.symbol as nonmetal
+from Elements as T1 cross join Elements as T2 on (T1.type = 'metal' and T2.type = 'nonmetal')
+
+
+
+
+select name as product, ifnull(sum(rest), 0) as rest, ifnull(sum(paid), 0) as paid, ifnull(sum(cancelled), 0) as cancelled, ifnull(sum(refunded), 0) as refunded
+from Products left join Invoices on Products.id = product_id
+group by name
+order by product
+
+
+
+select distinct C1.user_id as user_id
+from Confirmations as C1 inner join Confirmations as C2 on (C1.user_id = C2.user_id) and (C1.time_stamp != C2.time_stamp) and (maketime(hour(timediff(C2.time_stamp, C1.time_stamp)), minute(timediff(C2.time_stamp, C1.time_stamp)), second(timediff(C2.time_stamp, C1.time_stamp))) <= '24:00:00')
+
+
+select name as country, case 
+	when avg(weather_state) <= 15 then 'Cold'
+    when avg(weather_state) >= 25 then 'Hot'
+    else 'Warm'
+    end as weather_type
+from Countries inner join Weather on Countries.id = country_id
+where month(day) = 9 and year(day) = 2023
+group by name
+
+
+
+select SchoolA.student_name as student_A, SchoolB.student_name as student_B, SchoolC.student_name as student_C
+from SchoolA cross join SchoolB on SchoolA.student_name != SchoolB.student_name and SchoolA.student_id != SchoolB.student_id
+			 cross join SchoolC on SchoolA.student_name != SchoolC.student_name and SchoolA.student_id != SchoolC.student_id and SchoolB.student_name != SchoolC.student_name and SchoolB.student_id != SchoolC.student_id
+
+
+
+select Departments.name as department, count(Students.name) as students_count
+from Departments left join Students on Departments.id = dept_id
+group by Departments.name
+order by students_count desc, department
+
+
+
+select name, surname, count(*) as votes_count
+from Candidates inner join Votes on Candidates.id = candidate_id
+group by name, surname
+order by 3 desc
+limit 1
+
+
+
+select Playback.id as session_id
+from Playback left join Ads on Playback.user_id = Ads.user_id and time_stamp >= start_time and time_stamp <= end_time
+where isnull(time_stamp)
+
+
+
+select T1.sub_id as post_id, ifnull(count(Submissions.parent_id), 0) as number_of_comments
+from
+(
+	select sub_id
+	from Submissions
+	where isnull(parent_id)
+) as T1 left join Submissions on Submissions.parent_id = T1.sub_id
+group by T1.sub_id
+order by post_id desc
+
+
+select bid1 as buyer_id
+from 
+(
+	select *
+		from 
+		(
+			select buyer_id as bid1, name as name1
+			from Sales right join Products on product_id = Products.id
+			where name = 'Canon EOS R6 Camera' or name = 'Lenovo ThinkPad X1 Carbon'
+		) as T1 left join
+		(
+			select buyer_id as bid2, name as name2
+			from Sales right join Products on product_id = Products.id
+			where name = 'Canon EOS R6 Camera' or name = 'Lenovo ThinkPad X1 Carbon'
+		) as T2 on bid1 = bid2 and name1 != name2
+) as T3
+where (name1 = 'Canon EOS R6 Camera') and isnull(name2)
