@@ -173,3 +173,202 @@ from
 select concat('(', S1.x, '; ', S1.y, ')') as p1, concat('(', S2.x, '; ', S2.y, ')') as p2,
 round(sqrt((pow(S1.x - S2.x, 2) + pow(S1.y - S2.y, 2))), 1) as distance
 from Points as S1 cross join Points as S2 on sqrt((pow(S1.x - S2.x, 2) + pow(S1.y - S2.y, 2))) > 5 and S1.id < S2.id
+
+
+
+SELECT id, name, surname
+FROM Students
+
+UNION
+
+SELECT id, name, surname
+FROM Teachers;
+
+
+
+
+SELECT id, name, surname
+FROM Students
+WHERE id = 1
+
+UNION
+
+SELECT id, name, surname
+FROM Students
+WHERE id = 2
+
+UNION
+
+SELECT id, name, surname
+FROM Students
+WHERE id = 3;
+
+
+
+
+
+SELECT name AS firstname, surname AS lastname
+FROM Students
+
+UNION
+
+SELECT name, surname
+FROM Teachers;
+
+
+
+
+
+
+SELECT name, surname, age
+FROM Students
+
+UNION
+
+SELECT name, surname, subject
+FROM Teachers;
+
+
+
+SELECT surname
+FROM Students
+
+UNION DISTINCT
+
+SELECT surname
+FROM Teachers;
+
+
+
+SELECT surname
+FROM Students
+
+UNION ALL
+
+SELECT surname
+FROM Teachers;
+
+
+
+
+
+(SELECT id, name, surname
+FROM Students
+LIMIT 1)
+
+UNION
+
+(SELECT id, name, surname
+FROM Teachers
+LIMIT 1);
+
+
+
+(SELECT id, name, surname
+FROM Students
+ORDER BY id)
+
+UNION
+
+(SELECT id, name, surname
+FROM Teachers
+ORDER BY id);
+
+
+
+
+SELECT surname
+FROM Students
+
+INTERSECT
+
+SELECT surname
+FROM Teachers;
+
+
+
+SELECT surname
+FROM Students
+
+EXCEPT
+
+SELECT surname
+FROM Teachers;
+
+
+
+
+
+select 'Mathematician' as profession, count(*) as total
+from Mathematicians
+
+union all
+
+select 'Physicist', count(*)
+from Physicists
+
+union all
+
+select 'Programmer', count(*)
+from Programmers
+
+
+
+
+
+select '[0-5)' as session_duration, count(*) as total
+from Sessions
+where (duration / 60) < 5
+
+union all
+
+select '[5-10)' as session_duration, count(*) as total
+from Sessions
+where duration / 60 >= 5 and duration / 60 < 10
+
+union all
+
+select '[10-15)' as session_duration, count(*) as total
+from Sessions
+where duration / 60 >= 10 and duration / 60 < 15
+
+union all
+
+select '15 or more' as session_duration, count(*) as total
+from Sessions
+where duration / 60 >= 15
+
+
+
+
+select 'bee' as word, count(*) as count
+from Files
+where (content like '% bee %') or (content like 'bee %') or (content like '% bee') or (content like 'bee')
+
+union
+
+select 'geek', count(*)
+from Files
+where (content like '% geek %') or (content like 'geek %') or (content like '% geek') or (content like 'geek')
+
+
+
+
+
+select name, surname
+from (
+(select name, surname, 1 as third
+from Mathematicians)
+
+union
+
+(select name, surname, 2
+from Physicists)
+
+union
+
+(select name, surname, 3
+from Programmers)
+
+order by third, name desc, surname desc
+) as totalTable
