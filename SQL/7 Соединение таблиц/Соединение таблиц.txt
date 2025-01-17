@@ -465,3 +465,120 @@ from
 		) as T2 on bid1 = bid2 and name1 != name2
 ) as T3
 where (name1 = 'Canon EOS R6 Camera') and isnull(name2)
+
+
+
+select Users.id as id, sum(if(year(order_date) = 2023, 1, 0)) as purchases_in_2023
+from Users left join Orders on Users.id = buyer_id
+group by id
+
+
+
+
+select 
+sum(BigBoxes.apple_count + ifnull(SmallBoxes.apple_count, 0)) as apple_count, 
+sum(BigBoxes.orange_count + ifnull(SmallBoxes.orange_count, 0)) as orange_count
+from BigBoxes left join SmallBoxes on small_box_id = SmallBoxes.id
+
+
+select P1.id as p1, P2.id as p2, abs(P1.x - P2.x) * abs(P1.y - P2.y) as area
+from Points as P1 cross join Points as P2 on P1.id < P2.id
+where P1.x != P2.x and P1.y != P2.y
+order by area desc, p1, p2
+
+
+
+select count(*) as users_count
+from Subscriptions left join Streams on Subscriptions.user_id = Streams.user_id and year(stream_date) = 2023
+where (year(start_date) = 2023 or year(end_date) = 2023 or (year(start_date) < 2023 and year(end_date) > 2023)) and isnull(session_id)
+
+
+select distinct S1.customer_id as customer_id
+from Orders as S1 inner join Orders as S2 on S1.customer_id = S2.customer_id and S1.id != S2.id
+where abs(datediff(S1.order_date, S2.order_date)) < 7
+order by customer_id
+
+
+select driver_id, sum(if(isnull(passenger_id), 0, 1)) as count
+from 
+(select distinct driver_id from Rides) as drivers left join (select passenger_id from Rides) as passenger on driver_id = passenger_id
+group by driver_id
+order by driver_id 
+
+
+
+select Salespersons.id as id, sum(if(isnull(price), 0, price)) as total
+from Orders left join Customers on customer_id = Customers.id
+			right join Salespersons on salesperson_id = Salespersons.id
+group by id
+
+
+
+
+
+select 
+	Members.id,
+	name, 
+    case
+		when 100 * sum(if(isnull(charged_amount), 0, 1)) / sum(if(isnull(visit_date), 0, 1)) >= 80 then 'Diamond'
+        when 100 * sum(if(isnull(charged_amount), 0, 1)) / sum(if(isnull(visit_date), 0, 1)) < 80 and 100 * sum(if(isnull(charged_amount), 0, 1)) / sum(if(isnull(visit_date), 0, 1)) >= 50 then 'Gold'
+        when sum(if(isnull(visit_date), 0, 1)) = 0 then 'Bronze'
+        when 100 * sum(if(isnull(charged_amount), 0, 1)) / sum(if(isnull(visit_date), 0, 1)) < 50 then 'Silver'
+        end as status
+from Members left join Visits on Members.id = member_id
+ 			 left join Purchases on Visits.id = visit_id
+group by Members.id , name
+
+
+
+
+
+select *
+from (
+	select '2023-10-01' as day,
+	round( 
+	(
+		select count(*)
+		from Trips inner join Users as U1 on client_id = U1.id
+				   inner join Users as U2 on driver_id = U2.id
+		where U1.banned = 'no' and U2.banned = 'no' and status like 'canc%' and request_at = '2023-10-01'
+	) / (
+		select count(*)
+		from Trips inner join Users as U1 on client_id = U1.id
+				   inner join Users as U2 on driver_id = U2.id
+		where U1.banned = 'no' and U2.banned = 'no' and request_at = '2023-10-01'
+	), 2) as cancellation_rate
+
+	union all
+
+	select '2023-10-02' as day,
+	round( 
+	(
+		select count(*)
+		from Trips inner join Users as U1 on client_id = U1.id
+				   inner join Users as U2 on driver_id = U2.id
+		where U1.banned = 'no' and U2.banned = 'no' and status like 'canc%' and request_at = '2023-10-02'
+	) / (
+		select count(*)
+		from Trips inner join Users as U1 on client_id = U1.id
+				   inner join Users as U2 on driver_id = U2.id
+		where U1.banned = 'no' and U2.banned = 'no' and request_at = '2023-10-02'
+	), 2) as cancellation_rate
+
+	union all
+
+	select '2023-10-03' as day,
+	round( 
+	(
+		select count(*)
+		from Trips inner join Users as U1 on client_id = U1.id
+				   inner join Users as U2 on driver_id = U2.id
+		where U1.banned = 'no' and U2.banned = 'no' and status like 'canc%' and request_at = '2023-10-03'
+	) / (
+		select count(*)
+		from Trips inner join Users as U1 on client_id = U1.id
+				   inner join Users as U2 on driver_id = U2.id
+		where U1.banned = 'no' and U2.banned = 'no' and request_at = '2023-10-03'
+	), 2) as cancellation_rate
+) as outerTable
+where not isnull(cancellation_rate)
