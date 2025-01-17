@@ -1,0 +1,25 @@
+SET SQL_SAFE_UPDATES = 0;
+
+UPDATE Books
+SET price = 9.99;
+
+
+
+UPDATE Books
+SET price = 9.99,
+    amount = 50;
+
+UPDATE Books
+SET price = 1.99
+WHERE amount = 1;
+
+UPDATE Books
+SET price = price * 0.9;
+
+
+UPDATE Books
+SET price = CASE
+                WHEN amount < 5 THEN price * 0.9
+                WHEN amount BETWEEN 5 AND 10 THEN price * 0.7
+                ELSE price * 0.5
+            END;
