@@ -23,3 +23,83 @@ SET price = CASE
                 WHEN amount BETWEEN 5 AND 10 THEN price * 0.7
                 ELSE price * 0.5
             END;
+
+UPDATE Books
+SET price = price * 0.5
+WHERE author_id = (SELECT id
+                   FROM Authors
+                   WHERE author = 'Stephen King');
+
+
+
+UPDATE Books INNER JOIN Authors ON Books.author_id = Authors.id
+SET Books.price = Books.price * 0.5
+WHERE Authors.author = 'Stephen King';
+
+
+UPDATE Books
+SET price = price + 2
+LIMIT 1;
+
+UPDATE Books
+SET id = id + 1
+ORDER BY id DESC;
+
+UPDATE IGNORE Books
+SET id = id + 1;
+
+
+UPDATE Books
+SET amount = DEFAULT;
+
+SELECT *
+FROM Books;
+
+update Grades
+set grade = 5
+
+
+update Grades
+set grade = 5
+where grade = 4
+
+update Grades
+set grade = case grade
+				when 'A' then 'Great'
+                when 'B' then 'Great'
+                when 'C' then 'Well'
+                else 'Bad'
+                end
+
+
+update Grades
+set grade = 5
+where student_id = (select id from Students where student = 'Peter Parker')
+
+
+
+
+update Grades
+set grade = 5
+where student_id = (select id from Students where student = 'Mary Jane') and 
+		class_id = (select id from Classes where name = 'Math')
+
+
+
+update Grades
+set grade = null
+where date_of_receipt = '2023-07-26' and class_id = (select id from Classes where name = 'Biology')
+
+
+update Grades
+set grade = 5
+where student_id = (select id from Students where student = 'Gwen Stacy')
+order by date_of_receipt 
+limit 1;
+
+
+update Grades
+set grade = 5
+where student_id = (select id from Students where student = 'Gwen Stacy')
+order by date_of_receipt desc
+limit 1;
