@@ -103,3 +103,141 @@ set grade = 5
 where student_id = (select id from Students where student = 'Gwen Stacy')
 order by date_of_receipt desc
 limit 1;
+
+
+
+DELETE FROM Books;
+
+
+DELETE FROM Books
+WHERE title = 'Fight Club';
+
+DELETE FROM Books
+USING Books INNER JOIN Authors ON Books.author_id = Authors.id
+WHERE Authors.author = 'Chuck Palahniuk’;
+
+DELETE FROM Books
+ORDER BY id DESC
+LIMIT 1;
+
+
+DELETE FROM Books
+WHERE author_id = (SELECT id
+                   FROM Authors
+                   WHERE author = 'Jerome Salinger');
+
+DELETE FROM Authors
+WHERE author = 'Jerome Salinger’;
+
+
+DELETE IGNORE FROM Authors
+WHERE author = 'Jerome Salinger';
+
+TRUNCATE Books
+
+
+delete from Users
+where not id in (select distinct user_id from Purchases)
+
+
+delete from Purchases
+where user_id = (select id from Users where user = 'Matt Damon')
+order by id desc
+limit 2
+
+
+delete from Purchases
+where user_id = (select id from Users where user = 'Matt Damon');
+
+delete from Users
+where user = 'Matt Damon'
+
+delete from Purchases
+where film_id in (select id from Films where title like 'Toy S%');
+
+delete from Films
+where title like 'Toy S%'
+
+
+
+INSERT INTO Books
+VALUES (6, 'Animal Farm', 'George Orwell', NULL);
+
+
+INSERT INTO Books (id, title, author, price)
+VALUES (6, 'Animal Farm', 'George Orwell', NULL);
+
+
+INSERT INTO Books (id, price, author, title)
+VALUES (6, 5.99, 'George Orwell', 'Animal Farm');
+
+
+INSERT INTO Books (id, title, author, price)
+VALUES (6, 'Animal Farm', 'George Orwell', NULL),
+       (7, 'Lord of the Flies', 'William Golding', 5.99);
+
+INSERT INTO Books (id, title, author, price)
+VALUES (6, 'Animal Farm', 'George Orwell', 9.99 * 0.6);
+
+
+INSERT INTO Books
+SET id = 6,
+    title = 'Animal Farm',
+    author = 'George Orwell',
+    price = 9.99;
+
+
+
+INSERT INTO Books (id, title, author, price)
+SELECT id, title, author, price
+FROM NewBooks;
+
+
+
+INSERT INTO Books (id, title, author, price)
+SELECT (SELECT MAX(id)
+        FROM Books) + NewBooks.id,
+        title, author, price
+FROM NewBooks;
+
+
+INSERT IGNORE INTO Books (id, title, author, price)
+VALUES (1, 'Animal Farm', 'George Orwell', 9.99),
+       (6, 'Lord of the Flies', 'William Golding', 5.99);
+
+
+REPLACE INTO Books (id, title, author, price)
+VALUES (1, 'Animal Farm', 'George Orwell', 9.99),
+       (6, 'Lord of the Flies', 'William Golding', 5.99);
+
+
+
+insert into Songs (id, trackname, artist)
+select id + 1, 'Let Me Kiss You', 'Morrissey'
+from Songs 
+order by id desc 
+limit 1;
+
+
+insert into Songs (id, trackname, artist)
+values ((select max(id) from Songs as S1) + 1, 'Running up That Hill', 'Kate Bush'),
+	   ((select max(id) from Songs as S1) + 1, 'Thrill', 'The Sounds'),
+       ((select max(id) from Songs as S1) + 1, 'Keep Yourself Alive', 'Queen');
+
+
+
+insert into MorrisseySongs
+select *
+from Songs where artist = 'Morrissey';
+
+delete from Songs
+where artist = 'Morrissey';
+
+
+insert into NewSongs
+select * from Songs where id in ((select min(id) from Songs), (select max(id) from Songs));
+
+
+insert into NewSongs
+select (select max(id) from NewSongs) + id, trackname, artist
+from Songs;
