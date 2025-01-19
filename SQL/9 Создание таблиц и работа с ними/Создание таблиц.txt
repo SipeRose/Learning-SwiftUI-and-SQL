@@ -98,3 +98,187 @@ create table Students
     date_of_receipt date default (curdate()) check (date_of_receipt >= '2023-09-01'),
     phone_number	varchar(20) check ((phone_number like '7 (___) ___-__-__') or (phone_number like '8 (___) ___-__-__'))
 )
+
+
+
+
+
+
+CREATE TABLE Books
+(
+    id     INT PRIMARY KEY,
+    title  VARCHAR(40),
+    author VARCHAR(40)
+)
+
+
+CREATE TABLE Books
+(
+    title  VARCHAR(40),
+    author VARCHAR(40),
+    PRIMARY KEY (title, author)
+);
+
+
+CREATE TABLE Books
+(
+    id     INT PRIMARY KEY AUTO_INCREMENT,
+    title  VARCHAR(40),
+    author VARCHAR(40)
+);
+
+
+
+CREATE TABLE Authors
+(
+    id      INT PRIMARY KEY AUTO_INCREMENT,
+    name    VARCHAR(40),
+    surname VARCHAR(40)
+);
+
+CREATE TABLE Books
+(
+    id        INT PRIMARY KEY AUTO_INCREMENT,
+    title     VARCHAR(40),
+    author_id INT,
+    FOREIGN KEY (author_id) REFERENCES Authors (id)
+);
+
+
+CREATE TABLE Authors
+(
+    id      INT PRIMARY KEY AUTO_INCREMENT,
+    name    VARCHAR(40),
+    surname VARCHAR(40)
+);
+
+CREATE TABLE Books
+(
+    id        INT PRIMARY KEY AUTO_INCREMENT,
+    title     VARCHAR(40),
+    author_id INT,
+    FOREIGN KEY (author_id) REFERENCES Authors (id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+INSERT INTO Authors (name, surname)
+VALUES ('Stephen', 'King'),
+       ('Joseph', 'Conrad');
+       
+INSERT INTO Books (title, author_id)
+VALUES ('It', 1),
+       ('Heart of Darkness', 2),
+       ('Pet Sematary', 1);
+
+UPDATE Authors
+SET id = 3
+WHERE id = 1;
+
+
+
+CREATE TABLE Authors
+(
+    id      INT PRIMARY KEY AUTO_INCREMENT,
+    name    VARCHAR(40),
+    surname VARCHAR(40)
+);
+
+CREATE TABLE Books
+(
+    id        INT PRIMARY KEY AUTO_INCREMENT,
+    title     VARCHAR(40),
+    author_id INT,
+    FOREIGN KEY (author_id) REFERENCES Authors (id)
+        ON UPDATE SET NULL
+        ON DELETE SET NULL
+);
+
+INSERT INTO Authors (name, surname)
+VALUES ('Stephen', 'King'),
+       ('Joseph', 'Conrad');
+       
+INSERT INTO Books (title, author_id)
+VALUES ('It', 1),
+       ('Heart of Darkness', 2),
+       ('Pet Sematary', 1);
+
+UPDATE Authors
+SET id = 3
+WHERE id = 1;
+
+
+
+
+CREATE TABLE Authors
+(
+    id      INT PRIMARY KEY AUTO_INCREMENT,
+    name    VARCHAR(40),
+    surname VARCHAR(40)
+);
+
+CREATE TABLE Books
+(
+    id        INT PRIMARY KEY AUTO_INCREMENT,
+    title     VARCHAR(40),
+    author_id INT,
+    FOREIGN KEY (author_id) REFERENCES Authors (id)
+);
+
+DESCRIBE Books;
+
+
+
+
+create table Students
+(
+    id       int primary key auto_increment,
+    name     varchar(20) check (char_length(name) > 0),
+    surname  varchar(20) check (char_length(surname) > 0)
+)
+
+
+
+
+create table Students
+(
+    id       int primary key auto_increment,
+    name     varchar(20) check (char_length(name) > 0),
+    surname  varchar(20) check (char_length(surname) > 0)
+);
+
+create table Classes 
+(
+    id       int primary key auto_increment,
+    name     varchar(20) check (char_length(name) > 0)
+)
+
+
+
+
+create table Students
+(
+	id 		int primary key auto_increment,
+    name 	varchar(20) check (char_length(name) > 0),
+    surname varchar(20) check (char_length(surname) > 0)
+);
+
+create table Classes 
+(
+	id 		int primary key auto_increment,
+    name 	varchar(20) check (char_length(name) > 0)
+);
+
+create table Grades
+(
+	student_id   int,
+    class_id     int,
+    grade        int check (grade between 1 and 5),
+    foreign key (student_id) references Students (id)
+		on delete cascade
+        on update cascade,
+	foreign key (class_id) references Classes (id)
+		on update cascade
+        on delete cascade,
+    primary key (student_id, class_id)
+)
