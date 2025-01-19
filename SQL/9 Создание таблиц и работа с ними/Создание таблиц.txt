@@ -1,0 +1,100 @@
+CREATE TABLE Books
+(
+    id     INT,
+    title  VARCHAR(40),
+    author VARCHAR(40)
+);
+
+
+CREATE TABLE IF NOT EXISTS Books
+(
+    id     INT,
+    title  VARCHAR(40),
+    author VARCHAR(40),
+    price  INT
+);
+
+
+​CREATE TABLE Books
+(
+    id     INT NOT NULL,
+    title  VARCHAR(40),
+    author VARCHAR(40)
+);
+
+
+CREATE TABLE Books
+(
+    id     INT,
+    title  VARCHAR(40) DEFAULT 'Untitled',
+    author VARCHAR(40) DEFAULT 'Unknown'
+);
+
+
+CREATE TABLE Books
+(
+    id        INT,
+    title     VARCHAR(40),
+    author    VARCHAR(40),
+    fulltitle VARCHAR(40) DEFAULT (CONCAT(title, ' by ', author))
+);
+
+
+CREATE TABLE Books
+(
+    id     INT CHECK (id > 0),
+    title  VARCHAR(40),
+    author VARCHAR(40)
+);
+
+
+create table Students
+(
+	id 			int,
+    name 		varchar(20),
+    surname 	varchar(20),
+    age 		int
+)
+
+
+
+create table Students
+(
+	id 		int not null unique,
+    name 	varchar(20) not null,
+    surname varchar(20) not null,
+    age 	int default 18
+)
+
+
+
+create table Students
+(
+	id 		int not null unique,
+    name 	varchar(20) not null,
+    surname varchar(20) not null,
+    age 	int default 18,
+    date_of_receipt date default (curdate())
+)
+
+
+
+create table Students
+(
+	id 				int not null unique,
+    name 			varchar(20) not null check (char_length(name) > 0),
+    surname 		varchar(20) not null check (char_length(surname) > 0),
+    age 			int default 18 check (age >= 18),
+    date_of_receipt date default (curdate()) check (date_of_receipt >= '2023-09-01')
+)
+
+
+create table Students
+(
+	id 				int not null unique,
+    name 			varchar(20) not null check (char_length(name) > 0),
+    surname 		varchar(20) not null check (char_length(surname) > 0),
+    age 			int default 18 check (age >= 18),
+    date_of_receipt date default (curdate()) check (date_of_receipt >= '2023-09-01'),
+    phone_number	varchar(20) check ((phone_number like '7 (___) ___-__-__') or (phone_number like '8 (___) ___-__-__'))
+)
