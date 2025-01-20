@@ -349,3 +349,50 @@ alter table Students
 rename column name to firstname,
 rename column surname to lastname,
 drop column age
+
+
+alter table Students
+add column hometown varchar(20) not null default 'New York City' after surname
+
+alter table Students
+alter column name set default '',
+alter column surname set default ''
+
+alter table Students
+drop column id,
+add primary key (name, surname)
+
+alter table Math
+add foreign key (student_id) references Students (id)
+
+alter table Students
+add check (char_length(name) >= 2),
+add check (char_length(surname) >= 2),
+add check (age > 0)
+
+
+
+create table Studnets1
+(
+    id int primary key auto_increment,
+    name varchar(20),
+    surname varchar(20)
+);
+
+insert into Studnets1 (id, name, surname)
+select id, substring_index(fullname, ' ', 1), substring_index(fullname, ' ',-1)
+from Students; 
+
+truncate Students;
+
+alter table Students
+drop column fullname,
+add column name varchar(20),
+add column surname varchar(20);
+
+insert into Students
+select * from Studnets1;
+
+drop table Studnets1;
+
+select * from Students
