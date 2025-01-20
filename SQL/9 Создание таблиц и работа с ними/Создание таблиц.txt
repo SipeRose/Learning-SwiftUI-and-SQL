@@ -282,3 +282,70 @@ create table Grades
         on delete cascade,
     primary key (student_id, class_id)
 )
+
+
+
+
+DROP TABLE Books;
+
+DROP TABLE IF EXISTS Books;
+
+RENAME TABLE <текущее имя таблицы> TO <новое имя таблицы>
+
+RENAME TABLE Books TO OldBooks;
+
+ALTER TABLE Books
+DROP COLUMN author;
+
+ALTER TABLE Books
+RENAME COLUMN author TO writer;
+
+ALTER TABLE Books
+ADD COLUMN release_year INT CHECK (release_year > 0);
+
+ALTER TABLE Books
+ADD COLUMN release_year INT CHECK (release_year > 0) AFTER title;
+
+ALTER TABLE Books
+ADD COLUMN release_year INT NOT NULL;
+
+ALTER TABLE Books
+MODIFY COLUMN title VARCHAR(60) CHECK (title != '');
+
+ALTER TABLE Books
+ALTER COLUMN title SET DEFAULT 'Untitled';
+
+ALTER TABLE Books
+ALTER COLUMN title DROP DEFAULT;
+
+ALTER TABLE Books
+ADD PRIMARY KEY (id);
+
+ALTER TABLE Books
+DROP PRIMARY KEY;
+
+ALTER TABLE Books
+ADD COLUMN publisher VARCHAR(40);
+
+ALTER TABLE Books
+ADD FOREIGN KEY (publisher) REFERENCES Publishers (name);
+
+ALTER TABLE Books
+DROP FOREIGN KEY publisher;
+
+ALTER TABLE Books
+ADD CHECK (title != '');
+
+ALTER TABLE Books
+ADD CONSTRAINT title_is_not_empty_string CHECK (title != '');
+
+ALTER TABLE Books
+DROP CONSTRAINT title_is_not_empty_string;
+
+ALTER TABLE Books
+CHANGE COLUMN title name VARCHAR(60) CHECK (name != '');
+
+alter table Students
+rename column name to firstname,
+rename column surname to lastname,
+drop column age
