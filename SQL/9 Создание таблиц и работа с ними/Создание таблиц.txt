@@ -396,3 +396,225 @@ select * from Studnets1;
 drop table Studnets1;
 
 select * from Students
+
+
+
+
+
+
+
+DELIMITER //
+CREATE TRIGGER <имя триггера>
+<время срабатывания триггера> <операция, которая вызывает триггер>
+ON <имя таблицы>
+FOR EACH ROW
+BEGIN
+    <тело триггера>;
+END //
+DELIMITER ;
+
+
+
+SET NEW.field = 1
+
+
+
+
+DELIMITER //
+CREATE TRIGGER name_and_surname_formatting
+BEFORE INSERT
+ON Authors
+FOR EACH ROW
+BEGIN
+    SET NEW.name = CONCAT(UPPER(LEFT(NEW.name, 1)), LOWER(SUBSTRING(NEW.name, 2)));
+    SET NEW.surname= CONCAT(UPPER(LEFT(NEW.surname, 1)), LOWER(SUBSTRING(NEW.surname, 2)));
+END //
+DELIMITER ;
+
+INSERT INTO Authors (name, surname) 
+VALUES ('LEO', 'TOLSTOY'),
+       ('william', 'shakespeare'),
+       ('fYODOr', 'dOSTOYEVSKy');
+       
+SELECT id, name, surname
+FROM Authors;
+
+
+
+
+
+DELIMITER //
+CREATE TRIGGER name_and_surname_logging
+AFTER UPDATE
+ON Authors
+FOR EACH ROW
+BEGIN
+    INSERT INTO AuthorsNameHistory (author_id, old_name, old_surname, new_name, new_surname)
+    VALUES (OLD.id, OLD.name, OLD.surname, NEW.name, NEW.surname);
+END //
+DELIMITER ;
+
+UPDATE Authors
+SET name = 'Richard',
+    surname = 'Bachman'
+WHERE name = 'Stephen' AND surname = 'King';
+       
+SELECT author_id, old_name, old_surname, new_name, new_surname
+FROM AuthorsNameHistory;
+
+
+
+
+
+
+
+delimiter //
+create trigger change_date
+before insert
+on Posts
+for each row
+begin
+	set new.post_date = now();
+end
+//
+delimiter ;
+
+
+
+
+delimiter //
+create trigger normalize_salary
+before insert
+on Employees
+for each row
+begin
+	set new.salary = case
+					  when new.salary < 1000 then 1000
+                      else new.salary
+                      end
+	;
+end
+//
+delimiter ;
+
+
+
+
+delimiter //
+create trigger change_email
+before update
+on Users
+for each row
+begin
+	insert into UsersEmailHistory(user_id, old_email, new_email, updated_on)
+    values (new.id, old.email, new.email, current_date());
+end
+//
+delimiter ;
+
+
+
+
+delimiter //
+create trigger substract_count
+after insert
+on Orders
+for each row
+begin
+	update Products
+    set stock = stock - new.quantity
+    where Products.id = new.product_id;
+end
+//
+delimiter ;
+
+
+
+
+delimiter //
+create trigger refresh_avg
+after insert 
+on Reviews
+for each row
+begin
+	update Products
+    set avg_rating = (select avg(rating) from Reviews where product_id = new.product_id)
+    where Products.id = new.product_id;
+end
+//
+delimiter ;
+
+
+
+
+delimiter //
+create trigger phone_number
+before insert
+on Users
+for each row
+begin
+	set new.phone_number = case 
+							when new.phone_number like '+8__________' then replace(new.phone_number, '+8', '+7')
+                            when new.phone_number like '+7 ___ ___ __ __' then replace(new.phone_number, ' ', '')
+                            when new.phone_number like '+8 ___ ___ __ __' then replace(replace(new.phone_number, '+8', '+7'), ' ', '')
+                            else new.phone_number
+                            end;
+end
+//
+
+create trigger phone_number_update
+before update
+on Users
+for each row
+begin
+	set new.phone_number = case 
+							when new.phone_number like '+8__________' then replace(new.phone_number, '+8', '+7')
+                            when new.phone_number like '+7 ___ ___ __ __' then replace(new.phone_number, ' ', '')
+                            when new.phone_number like '+8 ___ ___ __ __' then replace(replace(new.phone_number, '+8', '+7'), ' ', '')
+                            else new.phone_number
+                            end;
+end
+//
+delimiter ;
+
+
+delimiter //
+create trigger add_buy
+after insert
+on Purchases
+for each row
+begin
+	update Users
+    set total_spending = total_spending + (select price from Films where id = new.film_id)
+    where Users.id = new.user_id;
+end
+//
+delimiter ;
+
+
+
+
+
+
+delimiter //
+create trigger add_buy
+after insert
+on Orders
+for each row
+begin
+	insert into Notifications(order_id, message)
+    values (new.id, concat((select name from Customers where id = new.customer_id), ', new status of your delivery on ', current_date(), ': ', new.status));
+end
+//
+
+create trigger refresh
+after update
+on Orders
+for each row
+begin
+	update Notifications
+    set message = concat((select name from Customers where id = new.customer_id), ', new status of your delivery on ', current_date(), ': ', new.status)
+    where order_id = new.id;
+end
+//
+delimiter ;
