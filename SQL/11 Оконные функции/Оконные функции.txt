@@ -1,0 +1,70 @@
+WINDOW <название окна> AS (<спецификация окна>)
+
+SELECT full_name AS engineer
+FROM Employees
+WHERE department = 'Engineering'
+WINDOW all_rows AS ()
+LIMIT 3;
+
+
+SELECT full_name,
+       ROW_NUMBER() OVER all_rows AS row_num
+FROM Employees
+WINDOW all_rows AS ();
+
+SELECT full_name, salary,
+       ROW_NUMBER() OVER salary_desc AS row_num
+FROM Employees
+WINDOW salary_desc AS (ORDER BY salary DESC);
+
+
+SELECT full_name, department,
+       ROW_NUMBER() OVER part_by_department AS row_num
+FROM Employees
+WINDOW part_by_department AS (PARTITION BY department);
+
+
+SELECT full_name, salary,
+       ROW_NUMBER() OVER (ORDER BY salary DESC) AS row_num
+FROM Employees;
+
+
+
+SELECT full_name, salary
+FROM Employees
+WHERE department = 'Engineering'
+WINDOW salary_asc AS (ORDER BY salary),
+       salary_desc AS (ORDER BY salary DESC)
+
+
+
+
+SELECT full_name, salary,
+       DENSE_RANK() OVER (ORDER BY salary DESC) AS place
+FROM Employees;
+
+
+SELECT full_name, department, salary,
+       DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS place
+FROM Employees;
+
+
+
+SELECT id, full_name,
+       NTILE(5) OVER (ORDER BY id) AS group_number
+FROM Employees;
+
+
+SELECT id, full_name,
+       NTILE(3) OVER (ORDER BY id) AS group_number
+FROM Employees;
+
+
+SELECT id, full_name, salary
+FROM Employees
+ORDER BY NTILE(5) OVER (ORDER BY id), salary;
+
+
+SELECT full_name, salary,
+       AVG(salary) OVER () AS avg_salary
+FROM Employees;

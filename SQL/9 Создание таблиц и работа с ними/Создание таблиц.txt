@@ -618,3 +618,122 @@ begin
 end
 //
 delimiter ;
+
+
+		Индексы
+
+
+CREATE INDEX idx_release_year
+ON Books(release_year);
+
+
+​CREATE INDEX idx_author_release_year
+ON Books(author, release_year);
+
+
+create index idx_director
+on Films(director)
+
+alter table Films
+rename index idx to idx_director
+
+
+create index idx_director_release_year
+on Films(director, release_year)
+
+
+drop index idx_full_film_info on Films;
+create index idx_full_film_info
+on Films(title, director, release_year)
+
+
+		Предсталвения
+
+CREATE VIEW <имя представления> AS
+<извлекающий запрос>
+
+
+CREATE VIEW FirstBooks AS
+SELECT *
+FROM Books
+LIMIT 3;
+
+SELECT *
+FROM FirstBooks;
+
+CREATE VIEW FirstBooks AS
+SELECT *
+FROM Books
+LIMIT 3;
+
+CREATE OR REPLACE VIEW FirstBooks AS
+SELECT *
+FROM Books
+LIMIT 5;
+
+SELECT *
+FROM FirstBooks;
+
+
+
+CREATE VIEW StephenKingBooks AS
+…
+
+SELECT *
+FROM StephenKingBooks
+ORDER BY release_year DESC
+LIMIT 1;
+
+
+ALTER VIEW <имя представления> AS
+<новый извлекающий запрос>
+
+
+CREATE VIEW FirstBooks AS
+SELECT *
+FROM Books
+LIMIT 3;
+
+ALTER VIEW FirstBooks AS
+SELECT *
+FROM Books
+LIMIT 5;
+
+SELECT *
+FROM FirstBooks;
+
+
+DROP VIEW <имя представления>
+
+
+
+create view LowStockProducts as
+select name, stock
+from Products
+where stock < 10
+
+
+
+create view UsersWithEmail as
+select * from Users
+where not isnull(email)
+
+
+
+create view ActivePlayers as
+select player_id, max(event_date) as last_login
+from 
+(
+    select player_id, event_date
+    from Activity
+    where 30 > (select datediff('2024-09-01', event_date)) and 0 <= (select datediff('2024-09-01', event_date))
+) as table1
+group by player_id
+
+
+
+
+create view AboveAverageSalaries as
+select name, surname, salary
+from Employees
+where salary > (select avg(salary) from Employees)
