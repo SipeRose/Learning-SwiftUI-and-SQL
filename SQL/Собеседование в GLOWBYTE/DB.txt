@@ -1,0 +1,227 @@
+CREATE TABLE Genres
+(
+	id 		INT PRIMARY KEY AUTO_INCREMENT,
+    name 	VARCHAR(15) NOT NULL
+);
+
+CREATE TABLE Authors
+(
+	id 		INT PRIMARY KEY AUTO_INCREMENT,
+    name 	VARCHAR(20) NOT NULL,
+    surname VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE Books
+(
+	id 			INT PRIMARY KEY AUTO_INCREMENT,
+    title 		VARCHAR(40) NOT NULL,
+    author_id 	INT NOT NULL,
+    genre_id 	INT NOT NULL,
+    FOREIGN KEY (author_id) REFERENCES Authors(id)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (genre_id) REFERENCES Genres(id)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE Books_count
+(
+	book_id 	INT PRIMARY KEY AUTO_INCREMENT,
+    available 	INT DEFAULT 0 CHECK (available >= 0),
+    given 		INT DEFAULT 0 CHECK (given >= 0),
+    FOREIGN KEY (book_id) REFERENCES Books(id)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE Readers
+(
+	id 			INT PRIMARY KEY AUTO_INCREMENT,
+    name 		VARCHAR(20) NOT NULL,
+    surname 	VARCHAR(20) NOT NULL,
+    phone 		VARCHAR(11),
+    email 		VARCHAR(30)
+);
+
+CREATE TABLE Given_books
+(
+	id 				INT PRIMARY KEY AUTO_INCREMENT,
+    book_id 		INT NOT NULL,
+    reader_id 		INT NOT NULL,
+    date_of_start 	DATETIME DEFAULT CURRENT_TIMESTAMP,
+    deadline 		INT,
+    return_date 	DATE DEFAULT NULL,
+    FOREIGN KEY (book_id) REFERENCES Books_count(book_id)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (reader_id) REFERENCES Readers(id)
+        ON UPDATE CASCADE
+);
+
+
+
+
+
+
+INSERT INTO Readers(name, surname, phone, email)
+VALUES ('Никита', 'Волков', '89257257209', 'nikita.volkov01@mail.ru'),
+	   ('Алексей', 'Крыжовников', '89157776655', 'alex.kryzh@gmail.com'),
+       ('Тимур', 'Юнусов', '89777777777', 'timati@bs.com'),
+       ('Валерий', 'Сюткин', '89264449243', 'black.cat@cloud.com');
+
+
+INSERT INTO Genres(name)
+VALUES ('Детектив'),
+	   ('Роман'),
+       ('Проза'),
+       ('Биография')
+
+
+
+INSERT INTO Authors(name, surname)
+VALUES ('Дарья', 'Донцова'),
+	   ('Федор', 'Достоевский'),
+       ('Уолтер', 'Айзексон'),
+       ('Теодор', 'Драйзер'),
+       ('Александр', 'Пушкин')
+
+
+INSERT INTO Books(title, author_id, genre_id)
+VALUES ('Дезертир рая', 1, 1),
+	   ('Блоха на балу', 1, 1),
+       ('Амур с гранатой', 1, 1),
+       ('Преступление и наказание', 2, 2),
+       ('Финансист', 4, 2),
+       ('Американская трагедия', 4, 2),
+       ('Евгений Онегин', 5, 2),
+       ('Стив Джобс', 4, 4)
+
+
+
+
+
+INSERT INTO Books_count(book_id, available, given)
+VALUES (1, 14, 0),
+	   (2, 21, 0),
+       (3, 8, 0),
+       (4, 35, 0),
+       (5, 25, 0),
+       (6, 26, 0),
+       (7, 54, 0),
+       (8, 12, 0)
+
+
+
+
+
+
+
+
+DELIMITER //
+CREATE TRIGGER new_give
+AFTER INSERT
+ON Given_books
+FOR EACH ROW
+BEGIN
+	UPDATE Books_count
+    SET available = available - 1,
+		given = given + 1
+	WHERE Books_count.book_id = NEW.book_id;
+END
+//
+DELIMITER ;
+
+
+
+
+
+DELIMITER //
+CREATE TRIGGER new_return
+BEFORE UPDATE
+ON Given_books
+FOR EACH ROW
+BEGIN
+	UPDATE Books_count
+    SET available = available + 1,
+		given = given - 1
+	WHERE Books_count.book_id = NEW.book_id AND ISNULL(OLD.return_date) AND NOT ISNULL(NEW.return_date);
+END
+//
+DELIMITER ;
+
+
+
+DELIMITER //
+CREATE TRIGGER delete_given
+BEFORE DELETE
+ON Given_books
+FOR EACH ROW
+BEGIN
+	UPDATE Books_count
+    SET available = available + 1,
+		given = given - 1
+	WHERE Books_count.book_id = OLD.book_id;
+END
+//
+DELIMITER ;
+
+
+
+
+INSERT INTO Given_books(book_id, reader_id, date_of_start, deadline, return_date)
+VALUES (1, 1, '2024-12-04', 14, '2024-12-08'),
+	   (1, 1, '2024-12-15', 7, '2024-12-25'),
+       (1, 1, '2024-12-26', 14, NULL),
+       (2, 1, '2025-01-04', 7, '2025-01-17');
+       (3, 1, '2025-01-03', 7, '2025-01-17');
+       (4, 3, '2024-12-04', 14, '2024-12-08'),
+       (4, 2, '2024-12-12', 14, '2024-12-18'),
+       (3, 1, '2024-12-04', 14, '2024-12-08'),
+       (3, 4, '2024-12-05', 7, '2024-12-15'),
+       (5, 2, '2024-12-01', 14, '2024-12-08'),
+       (5, 4, '2024-12-04', 14, '2024-12-14'),
+       (7, 1, '2024-12-04', 14, '2024-12-08'),
+       (7, 2, '2024-12-05', 7, '2024-12-17'),
+       (6, 4, '2024-12-04', 14, '2024-12-08'),
+       (4, 1, '2025-01-14', 7, NULL),
+       (4, 2, '2025-01-14', 7, NULL)
+
+
+
+
+
+
+
+
+SELECT title AS 'Название книги', count(*) AS 'Количество взятий'
+FROM Given_books INNER JOIN Books_count ON Given_books.book_id = Books_count.book_id
+				 INNER JOIN Books ON Books_count.book_id = Books.id
+WHERE MONTH(date_of_start) = MONTH(SUBDATE(NOW(), INTERVAL 1 MONTH))
+GROUP BY title
+ORDER BY 2 DESC
+LIMIT 5
+
+
+
+
+
+
+SELECT Readers.name as Name, Readers.surname as Surname, count(*) as 'Количество просроченных'
+FROM
+(
+	SELECT DISTINCT book_id, reader_id
+	FROM
+	(
+		SELECT book_id, reader_id, deadline,
+		DATEDIFF(IF(ISNULL(return_date), CURDATE(), return_date), date_of_start) as start_finish_difference
+		FROM Given_books
+	) AS start_finish_difference_Table
+	WHERE start_finish_difference > deadline
+) AS FoundedBooksAndReadersTable 
+		INNER JOIN Readers ON FoundedBooksAndReadersTable.reader_id = Readers.id
+		INNER JOIN Books_count ON FoundedBooksAndReadersTable.book_id = Books_count.book_id
+        INNER JOIN Books ON Books_count.book_id = Books.id
+        INNER JOIN Genres ON Books.genre_id = Genres.id
+WHERE Genres.name = 'Детектив'
+GROUP BY Name, Surname
