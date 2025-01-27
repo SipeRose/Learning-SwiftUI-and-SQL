@@ -737,3 +737,86 @@ create view AboveAverageSalaries as
 select name, surname, salary
 from Employees
 where salary > (select avg(salary) from Employees)
+
+
+
+
+CREATE VIEW BooksInfo (bookname, writer) AS
+SELECT title,
+       CONCAT(Authors.name, ' ', Authors.surname)
+FROM Books INNER JOIN Authors ON Books.author_id = Authors.id;
+
+SELECT *
+FROM BooksInfo;
+
+
+
+
+create view CategorySalesSummary as
+select category, sum(price * if(isnull(quantity), 0, quantity)) as total
+from Products left join Orders on Products.id = Orders.product_id
+group by category
+
+
+
+
+create view PopularMovies as
+select title, count(*) as total_purchases
+from Films inner join Purchases on Films.id = Purchases.film_id
+group by title
+having count(*) > 2
+order by total_purchases, title
+
+
+
+create view NoMinMaxStudents as
+select group_id
+from Students
+group by group_id
+having count(*) not in (
+	(select max(total)
+	from (
+		select group_id, count(*) as total
+		from Students
+		group by group_id
+	) as FirstTable),
+    (select min(total)
+	from (
+		select group_id, count(*) as total
+		from Students
+		group by group_id
+	) as SecondTable)
+)
+
+
+
+
+create view MostCommonFollowers as
+select T1.user_id as user1_id, T2.user_id as user2_id
+from Relations as T1 inner join Relations as T2 on T1.follower_id = T2.follower_id and T1.user_id < T2.user_id
+group by T1.user_id, T2.user_id
+having count(T1.follower_id) = (
+	select max(total) 
+	from (
+		select T1.user_id as user1_id, T2.user_id as user2_id, count(T1.follower_id) as total
+		from Relations as T1 inner join Relations as T2 on T1.follower_id = T2.follower_id and T1.user_id < T2.user_id
+		group by T1.user_id, T2.user_id
+	) as FirstTable
+)
+
+
+
+
+create or replace view firstView as
+select product_id, year(purchase_date) as year, count(*) as total
+from Orders
+group by product_id, year;
+
+create or replace view secondView as
+select T1.product_id as product_id, T1.year as first_year, T1.total as first_total, T2.year as second_year, T2.total as second_total
+from firstView as T1 inner join firstView as T2 on T1.product_id = T2.product_id and T1.year < T2.year and (T2.year - T1.year) = 1;
+
+create view PopularProducts as
+select distinct product_id
+from secondView
+where first_total > 2 and second_total > 2
