@@ -68,3 +68,132 @@ ORDER BY NTILE(5) OVER (ORDER BY id), salary;
 SELECT full_name, salary,
        AVG(salary) OVER () AS avg_salary
 FROM Employees;
+
+
+
+select row_number() over (order by release_year) as num, title, director, release_year
+from Films
+order by num desc
+
+
+select (num - 1) * 5 as num, title, director, release_year
+from (
+	select *, row_number() over (order by release_year desc) as num
+	from Films
+) as FirstTable
+order by num desc
+
+
+
+select row_number() over (partition by director order by release_year) as num, title, director, release_year
+from Films
+order by director, num desc
+
+
+
+
+select dense_rank() over (partition by country order by rating desc) as rank_in_country, 
+        full_name, country, rating
+from Directors
+order by country, rank_in_country desc, id desc
+
+
+
+select full_name, rating
+from (
+	select full_name, country, rating, dense_rank() over (order by rating desc) as ranking
+	from Directors
+) as FirstTable
+where ranking = 2
+order by full_name
+
+
+select *
+from Directors
+order by NTILE(2) over (order by id) desc, rating desc, id
+
+
+
+SELECT full_name, department, salary,
+       AVG(salary) OVER (PARTITION BY department) AS department_avg_salary
+FROM Employees;
+
+
+select full_name, salary, department, count(*) over (partition by department)
+from Employees
+
+
+
+SELECT full_name, department,
+       MIN(salary) OVER (PARTITION BY department) AS department_min_salary,
+       MAX(salary) OVER (PARTITION BY department) AS department_max_salary
+FROM Employees;
+
+
+
+
+​ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+
+​ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+
+​ROWS BETWEEN 1 FOLLOWING AND 2 FOLLOWING
+
+
+SELECT id, full_name, salary,
+       AVG(salary) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS avg_salary
+FROM Employees;
+
+
+SELECT id, full_name, department, salary,
+       AVG(salary) OVER (PARTITION BY department
+                         ORDER BY id
+                         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS avg_salary
+FROM Employees;
+
+
+
+
+RANGE BETWEEN 2000 PRECEDING AND 2000 FOLLOWING
+
+
+
+
+SELECT id, full_name, salary,
+       FIRST_VALUE(salary) OVER (ORDER BY id) AS first_employee_salary
+FROM Employees;
+
+
+
+SELECT id, full_name, department, salary,
+       FIRST_VALUE(salary) OVER (PARTITION BY department ORDER BY id) AS first_employee_salary_in_department
+FROM Employees;
+
+
+SELECT id, full_name, salary,
+       LAST_VALUE(salary) OVER (ORDER BY id
+                                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_employee_salary
+FROM Employees;
+
+
+SELECT id, full_name, salary,
+       NTH_VALUE(salary, 2) OVER id_asc AS second_employee_salary,
+       NTH_VALUE(salary, 3) OVER id_asc AS third_employee_salary
+FROM Employees
+WINDOW id_asc AS (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING);
+
+
+
+SELECT id, full_name, salary,
+       LAG(salary, 1) OVER (ORDER BY id) AS prev_employee_salary
+FROM Employees;
+
+SELECT id, full_name, salary,
+       LEAD(salary, 1) OVER (ORDER BY id) AS next_employee_salary
+FROM Employees;
+
+
+
+
+SELECT id, full_name, salary,
+       LEAD(salary, 1, 0) OVER (ORDER BY id) AS next_employee_salary
+FROM Employees;
