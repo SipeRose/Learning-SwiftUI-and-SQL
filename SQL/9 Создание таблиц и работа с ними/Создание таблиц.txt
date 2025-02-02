@@ -820,3 +820,225 @@ create view PopularProducts as
 select distinct product_id
 from secondView
 where first_total > 2 and second_total > 2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+WITH StephenKingBooks AS (
+    SELECT title, release_year
+    FROM Books INNER JOIN Authors ON Books.author_id = Authors.id
+    WHERE Authors.name = 'Stephen' and Authors.surname = 'King' 
+)
+
+SELECT title
+FROM StephenKingBooks
+WHERE release_year = (SELECT MAX(release_year)
+                      FROM StephenKingBooks);
+
+
+
+
+
+WITH StephenKingBooks AS (
+    SELECT title, release_year
+    FROM Books INNER JOIN Authors ON Books.author_id = Authors.id
+    WHERE Authors.name = 'Stephen' and Authors.surname = 'King' 
+),
+JeromeSalingerBooks AS (
+    SELECT title, release_year
+    FROM Books INNER JOIN Authors ON Books.author_id = Authors.id
+    WHERE Authors.name = 'Jerome' and Authors.surname = 'Salinger' 
+)
+
+SELECT *
+FROM StephenKingBooks
+
+UNION 
+
+SELECT *
+FROM JeromeSalingerBooks
+
+
+
+
+WITH FirstBooks (bookname, year) AS (
+    SELECT title, release_year
+    FROM Books
+    LIMIT 3
+)
+
+SELECT *
+FROM FirstBooks;
+
+
+
+
+
+
+
+
+with Grades as (
+select case grade
+		when 'A' then 'Great'
+        when 'B' then 'Great'
+        when 'C' then 'Well'
+        else 'Bad'
+        end as letter_grade
+from Math
+)
+
+select letter_grade as result, count(*) as students
+from Grades
+group by letter_grade
+
+
+
+
+with Averages as (
+	select customer_id, avg(amount) as average
+    from Orders
+    group by customer_id
+)
+
+select name as customer
+from Averages inner join Customers on Averages.customer_id = Customers.id
+where average = (select max(average) from Averages)
+
+
+ with first_store as (
+	select store, sum(amount)
+    from Orders
+    where month(order_date) = 6
+    group by store
+    order by sum(amount) desc
+    limit 1
+ ),
+ second_store as (
+	select store, sum(amount)
+    from Orders
+    where month(order_date) = 7
+    group by store
+    order by sum(amount) desc
+    limit 1
+ )
+ 
+ select (select store from first_store) as best_in_june, (select store from second_store) as best_in_july
+
+
+
+
+
+
+with Averages as (
+select store, avg(amount) as average
+from Orders
+group by store
+)
+
+select id, Orders.store, amount, round(average, 1) as avg_for_store
+from Orders inner join Averages on Orders.store = Averages.store
+
+
+
+with Departures as (
+	select departure_airport, sum(flights_count) as summa
+    from Flights
+    group by departure_airport
+),
+Arrivals as (
+	select arrival_airport, sum(flights_count) as summa
+    from Flights
+    group by arrival_airport
+),
+result as (
+	select departure_airport, (Departures.summa + Arrivals.summa) as summa
+	from Departures inner join Arrivals on arrival_airport = departure_airport
+	order by 2 desc
+)
+
+select departure_airport as airport_id
+from result
+where summa = (select max(summa) from result)
+
+
+
+
+
+
+
+
+
+with max_salaries as (
+	select company_id, max(salary) as max_salary
+    from Salaries
+    group by company_id
+),
+taxes as (
+	select company_id, case 
+						when max_salary < 1000 then 0
+                        when max_salary between 1000 and 10000 then 0.24
+                        else 0.49
+                        end as tax
+	from max_salaries
+)
+select employee_id as id, employee_name as name, round(salary * (1 - tax)) as salary
+from (
+	select Salaries.company_id, employee_id, employee_name, salary, tax
+	from Salaries inner join taxes on Salaries.company_id = taxes.company_id
+) as OuterTable
+
+
+
+
+
+
+
+with Counts_table as (
+	select voter, sum(if(isnull(candidate), 0, 1)) as counts
+	from Votes
+	group by voter
+	having counts != 0
+),
+Score_table as (
+	select voter, 1 / counts as score
+	from Counts_table
+)
+select candidate
+from (
+	select candidate, score
+	from Score_table inner join Votes on Score_table.voter = Votes.voter
+) as Outer_table
+group by candidate
+order by sum(score) desc
+limit 1
+
+
+
+
+
+with Departures as (
+	select id, arrival_time, 
+			(
+				select departure_time 
+                from Buses 
+                where departure_time >= Passengers.arrival_time 
+                order by departure_time 
+                limit 1
+			) as departure_time
+	from Passengers
+)
+
+select Buses.id as bus_id, count(*) as passenger_count
+from Buses inner join Departures on Buses.departure_time = Departures.departure_time
+group by bus_id
+order by bus_id
