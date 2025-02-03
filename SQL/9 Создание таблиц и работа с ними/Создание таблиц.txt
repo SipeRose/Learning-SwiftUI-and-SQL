@@ -1042,3 +1042,229 @@ select Buses.id as bus_id, count(*) as passenger_count
 from Buses inner join Departures on Buses.departure_time = Departures.departure_time
 group by bus_id
 order by bus_id
+
+
+
+
+
+
+WITH RECURSIVE NaturalNumbers AS (
+    SELECT 1 AS number                         -- нерекурсивный запрос
+    UNION ALL
+    SELECT number + 1                          -- рекурсивный  запрос
+    FROM NaturalNumbers
+    WHERE number < 10
+)
+
+SELECT *
+FROM NaturalNumbers;
+
+
+
+
+with recursive squares as (
+	select 1 as numberr, 1 * 1 as number
+    union all
+    select numberr + 1, (numberr + 1) * (numberr + 1)
+    from squares
+    limit 10
+)
+
+select number from squares
+
+
+
+
+
+with recursive Days as (
+	select '2024-12-31' as day
+    union all
+    select day - interval 1 day
+    from Days
+    limit 31
+)
+
+select * from Days
+
+
+
+
+with recursive Letters as (
+	select 65 as code, CONVERT(char(65), char) as letter
+    union all 
+    select code + 1, Convert(char(code + 1), char)
+    from Letters
+    limit 26
+)
+
+select letter from Letters
+
+
+
+
+with recursive Months as (
+	select '2024-01-01' as date, monthname('2024-01-01') as month
+    union all
+    select date + interval 1 month, monthname(date + interval 1 month)
+    from Months
+    limit 12
+)
+
+select month from Months
+
+
+
+
+
+with recursive Factorials as (
+	select 1 as number, 1 as factorial
+    union all
+    select number + 1, factorial * (number + 1)
+    from Factorials
+    limit 20
+)
+
+select * from Factorials
+
+
+
+
+
+with recursive tenToFifty as (
+	select 10 as number
+    union all
+    select number + 1
+    from tenToFifty
+    limit 41
+)
+
+select * from tenToFifty
+order by rand()
+limit 20
+
+
+
+
+with recursive Nums as (
+	select (select num from Numbers order by num limit 1) as num
+    union all
+    select num + 1
+    from Nums
+    where num < (select max(num) from Numbers)
+)
+
+select distinct num from Nums
+
+
+
+
+with recursive Dates as (
+	select (select order_date from Orders order by order_date limit 1) as order_date
+    union all
+    select order_date + interval 1 day
+    from Dates
+    where order_date < (select order_date from Orders order by order_date desc limit 1)
+)
+
+select Dates.order_date as order_date, sum(if(isnull(store), 0, 1)) as orders_count
+from Dates left join Orders on Dates.order_date = Orders.order_date
+group by Dates.order_date
+
+
+
+
+with recursive Hierarchy as (
+	select id, Convert(name, CHAR(255)) as name
+    from Files
+    where parent_directory_id is null
+    
+    union all
+    
+    select Files.id as id, Concat(Hierarchy.name, '/', Files.name) as name
+    from Hierarchy inner join Files on Files.parent_directory_id = Hierarchy.id
+)
+
+select id, name as path from Hierarchy
+
+
+
+
+
+
+
+with recursive Amounts as (
+	select 1 as investors_number, investment_amount, investment_amount as individual_amount
+    from Investment
+    
+    union all
+    
+    select investors_number + 1, investment_amount, investment_amount / (investors_number + 1)
+    from Amounts
+    
+    where investors_number < 3
+)
+
+select * from Amounts
+
+
+
+
+
+
+
+
+with recursive Cities as (
+	select destination_city, distance
+    from Routes
+    where source_city = 'New york'
+    
+    union distinct
+    
+    select Routes.destination_city, Cities.distance + Routes.distance
+    from Cities inner join Routes on Routes.source_city = Cities.destination_city
+)
+
+select * from Cities
+
+
+
+
+
+
+with recursive task as (
+	select id, name, time_required as total_time
+    from Tasks
+    where depends_on_task_id is null
+    
+    union all
+    
+    select Tasks.id, Tasks.name, task.total_time + Tasks.time_required as total_time
+    from task inner join Tasks on task.id = Tasks.depends_on_task_id
+)
+
+select name, total_time from task
+
+
+
+
+
+
+
+
+with recursive destinations as (
+	select destination_city, Convert(concat('Groningen', ' -> ', destination_city), Char(200)) as route
+    from Routes
+    where source_city = 'Groningen'
+    
+    union all
+    
+    select Routes.destination_city, concat(route, ' -> ', Routes.destination_city)
+    from  destinations inner join Routes on destinations.destination_city = Routes.source_city
+),
+
+sources as (
+select (select count(*) from Routes where Convert(source_city, Char(200)) = substring_index(destinations.route, ' -> ', -1)) as is_source, route
+from destinations
+)
+
+select route from sources where is_source = 0
